@@ -80,7 +80,7 @@
             position: absolute;
             top: 10vh;
             font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
-            font-size: clamp(90px, 12vw, 140px);
+            font-size: clamp(110px, 12vw, 140px);
             color: #fff;
             text-shadow:
                 0 0 10px rgba(255, 200, 50, 0.8),
@@ -98,6 +98,32 @@
             height: clamp(450px, 50vh, 600px);
             image-rendering: auto;
             pointer-events: none;
+        }
+
+        #touchHint {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(170px, 18vw, 220px);
+            opacity: 0.8;
+            z-index: 5;
+            pointer-events: none;
+            animation: touchPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes touchPulse {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.15);
+                opacity: 0.9;
+            }
         }
 
         /* ===== GAME OVER OVERLAY ===== */
@@ -147,14 +173,29 @@
             user-select: none;
         }
 
+        #tbdGif {
+            position: fixed;
+            bottom: 0px;
+            right: 20px;
+            width: clamp(100px, 15vw, 200px);
+            z-index: 200;
+            opacity: 1;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            transform: translateY(100%);
+        }
+
+        #tbdGif.active {
+            transform: translateY(0);
+        }
+
         #gameOverScore {
             position: relative;
             z-index: 2;
             font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
             font-size: clamp(24px, 5vw, 48px);
             color: #ffd700;
-            text-shadow:
-                0 0 10px rgba(255, 215, 0, 0.6),
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6),
                 2px 2px 0px rgba(0, 0, 0, 0.5);
             margin-top: 20px;
             opacity: 0;
@@ -215,9 +256,23 @@
         }
 
         @keyframes startScreenExit {
-            0% { opacity: 1; transform: scale(1); filter: brightness(1); }
-            40% { opacity: 1; transform: scale(1.1); filter: brightness(1.8); }
-            100% { opacity: 0; transform: scale(1.3); filter: brightness(3); }
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            40% {
+                opacity: 1;
+                transform: scale(1.1);
+                filter: brightness(1.8);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.3);
+                filter: brightness(3);
+            }
         }
 
         @keyframes overlayFadeIn {
@@ -356,10 +411,24 @@
         }
 
         @keyframes scorePop {
-            0% { transform: scale(1); color: #fff; }
-            30% { transform: scale(1.5); color: #ffd700; }
-            60% { transform: scale(0.9); }
-            100% { transform: scale(1); color: #fff; }
+            0% {
+                transform: scale(1);
+                color: #fff;
+            }
+
+            30% {
+                transform: scale(1.5);
+                color: #ffd700;
+            }
+
+            60% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+                color: #fff;
+            }
         }
 
         /* ===== TRANSITION FLASH ===== */
@@ -381,8 +450,13 @@
         }
 
         @keyframes transitionFlashAnim {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
         }
 
         /* ===== GET READY TEXT ===== */
@@ -424,9 +498,20 @@
         }
 
         @keyframes getReadyAnim {
-            0% { opacity: 0; transform: scale(2); }
-            15% { opacity: 1; transform: scale(1); }
-            100% { opacity: 1; transform: scale(1); }
+            0% {
+                opacity: 0;
+                transform: scale(2);
+            }
+
+            15% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         #tutorialHint {
@@ -442,8 +527,15 @@
         }
 
         @keyframes tutorialFade {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         #tutorialHint.visible {
@@ -451,8 +543,31 @@
         }
 
         @keyframes tutorialBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        #octopyLogo {
+            position: fixed;
+            bottom: 2px;
+            right: 2px;
+            height: clamp(30px, 8vh, 100px);
+            z-index: 210;
+            pointer-events: none;
+            opacity: 0.85;
+            filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+            transition: opacity 0.3s ease;
+        }
+
+        #octopyLogo.hidden {
+            opacity: 0;
         }
     </style>
 </head>
@@ -462,6 +577,7 @@
     <div id="startScreen">
         <div id="startTitle">OctyFly</div>
         <img id="startSprite" src="./sprite2.gif" alt="Octy">
+        <img id="touchHint" src="./touch.gif" alt="Touch to Start">
     </div>
 
     <!-- Game Over Overlay -->
@@ -482,6 +598,8 @@
     <!-- Transition Flash -->
     <div id="transitionFlash"></div>
 
+    <img id="tbdGif" src="./tbd.gif" alt="TBD">
+
     <!-- Get Ready -->
     <div id="getReady">
         <div id="getReadyContent">
@@ -492,6 +610,11 @@
 
     <canvas id="board"></canvas>
     <img id="characterSprite" src="./sprite.gif">
+
+    <!-- Octopy Logo (Always Visible) -->
+    <img id="octopyLogo" src="./Octopy.png" alt="Octopy Logo">
+
+
 
     <script>
         //board
@@ -504,6 +627,7 @@
         let gameStarted = false;
         let getReadyPhase = false;
         let hoverTime = 0;
+        let hardMode = false;
 
         //character
         let characterWidth = 96;  //width/height ratio = 1080/1920 = 9/16
@@ -537,6 +661,8 @@
         let gameOver = false;
         let score = 0;
         let pipeInterval;
+        let tbdGif;
+        let tbdShownAt19 = false;
 
         //sounds
         const sfxWing = new Audio("./sfx/sfx_wing.wav");
@@ -546,8 +672,10 @@
         const sfxSwooshing = new Audio("./sfx/sfx_swooshing.wav");
         const sfxHome = new Audio("./sfx/sfx_home.wav");
         sfxHome.loop = true;
+        sfxHome.volume = 0.3;
         const bgm = new Audio("./sfx/sfx_loop.wav");
         bgm.loop = true;
+        bgm.volume = 0;
         sfxWing.playbackRate = 1.8;
 
         function playSound(audio) {
@@ -558,14 +686,15 @@
 
         let bgmFadeInterval;
         function fadeInBgm(duration) {
+            const targetVolume = 0.4;
             bgm.volume = 0;
             bgm.play();
             clearInterval(bgmFadeInterval);
             const step = 0.05;
-            const interval = duration / (1 / step);
+            const interval = duration / (targetVolume / step);
             bgmFadeInterval = setInterval(() => {
-                if (bgm.volume + step >= 1) {
-                    bgm.volume = 1;
+                if (bgm.volume + step >= targetVolume) {
+                    bgm.volume = targetVolume;
                     clearInterval(bgmFadeInterval);
                 } else {
                     bgm.volume += step;
@@ -577,7 +706,7 @@
             clearInterval(bgmFadeInterval);
             bgm.pause();
             bgm.currentTime = 0;
-            bgm.volume = 1;
+            bgm.volume = 0;
         }
 
         // Move the <img> element to match the character's position
@@ -586,6 +715,14 @@
             characterSprite.style.top = character.y + "px";
             characterSprite.style.width = character.width + "px";
             characterSprite.style.height = character.height + "px";
+        }
+
+        function showTbd(duration) {
+            if (!tbdGif) return;
+            tbdGif.classList.add("active");
+            setTimeout(() => {
+                tbdGif.classList.remove("active");
+            }, duration);
         }
 
         window.onload = function () {
@@ -613,6 +750,16 @@
 
             // Play home tune on start screen
             sfxHome.play();
+
+            tbdGif = document.getElementById("tbdGif");
+
+            // Random TBD on home screen
+            setInterval(() => {
+                const startScreen = document.getElementById("startScreen");
+                if (startScreen && !startScreen.classList.contains("hidden") && Math.random() < 0.1) {
+                    showTbd(1500 + Math.random() * 1500);
+                }
+            }, 25000);
         }
 
         function handleInput(e) {
@@ -643,6 +790,8 @@
             score = 0;
             pipeArray = [];
             velocityY = 0;
+            velocityX = -15;
+            gravity = 0.3;
 
             // Animate start screen exit
             const startScreen = document.getElementById('startScreen');
@@ -693,14 +842,16 @@
                 // Stop home tune, fade in game music
                 sfxHome.pause();
                 sfxHome.currentTime = 0;
+                tbdShownAt19 = false;
                 fadeInBgm(2000);
                 requestAnimationFrame(update);
             }, 600); // Wait for exit animation to finish
         }
 
         function showGameOver() {
-            // Hide score HUD
+            // Hide score HUD and logo
             document.getElementById('scoreHud').classList.remove('active');
+            document.getElementById('octopyLogo').classList.add('hidden');
 
             // Screen shake
             document.body.classList.add('shake');
@@ -745,8 +896,9 @@
             // Hide game over
             hideGameOver();
 
-            // Hide score HUD
+            // Hide score HUD, show logo
             document.getElementById('scoreHud').classList.remove('active');
+            document.getElementById('octopyLogo').classList.remove('hidden');
 
             // Show start screen with fade-in
             const startScreen = document.getElementById('startScreen');
@@ -848,6 +1000,18 @@
                         scoreVal.classList.remove('pop');
                         void scoreVal.offsetWidth;
                         scoreVal.classList.add('pop');
+
+                        // Activate hard mode at 20 points
+                        // Increase difficulty every 20 points
+                        if (score > 0 && score % 20 === 0) {
+                            increaseDifficulty();
+                        }
+
+                        // Show TBD at 19 points
+                        if (score === 19 && !tbdShownAt19) {
+                            showTbd(2000);
+                            tbdShownAt19 = true;
+                        }
                     }
                     pipe.passed = true;
                 }
@@ -876,7 +1040,8 @@
             if (gameOver) { return; }
 
             let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2);
-            let openingSpace = board.height / 2;
+            let difficultyLevel = Math.floor(score / 20);
+            let openingSpace = board.height / (2 + Math.min(1, difficultyLevel * 0.2));
 
             let topImg = pipeImages[Math.floor(Math.random() * pipeImages.length)];
             let bottomImg = pipeImages[Math.floor(Math.random() * pipeImages.length)];
@@ -923,6 +1088,19 @@
                 ax + aw > b.x &&
                 ay < b.y + b.height &&
                 ay + ah > b.y;
+        }
+
+        function increaseDifficulty() {
+            // Increase speed & gravity
+            velocityX -= 1.5;
+            gravity += 0.02;
+
+            // Faster pipe spawning
+            const currentMilestone = Math.floor(score / 20);
+            const newInterval = Math.max(600, 1500 - (currentMilestone * 150));
+
+            if (pipeInterval) clearInterval(pipeInterval);
+            pipeInterval = setInterval(placePipes, newInterval);
         }
     </script>
 </body>
