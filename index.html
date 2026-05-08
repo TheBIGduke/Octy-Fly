@@ -65,6 +65,12 @@
             display: none;
         }
 
+        /* Start screen exit animation */
+        #startScreen.exit {
+            animation: startScreenExit 0.8s ease-in forwards;
+            pointer-events: none;
+        }
+
         /* Start screen fade-in */
         #startScreen.fade-in {
             animation: fadeIn 0.8s ease-in forwards;
@@ -208,6 +214,12 @@
             }
         }
 
+        @keyframes startScreenExit {
+            0% { opacity: 1; transform: scale(1); filter: brightness(1); }
+            40% { opacity: 1; transform: scale(1.1); filter: brightness(1.8); }
+            100% { opacity: 0; transform: scale(1.3); filter: brightness(3); }
+        }
+
         @keyframes overlayFadeIn {
             from {
                 opacity: 0;
@@ -308,6 +320,140 @@
         body.shake {
             animation: screenShake 0.5s ease-out;
         }
+
+        /* ===== SCORE HUD ===== */
+        #scoreHud {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        #scoreHud.active {
+            display: flex;
+        }
+
+        #scoreValue {
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
+            font-size: clamp(48px, 8vw, 80px);
+            color: #fff;
+            text-shadow:
+                0 0 10px rgba(255, 255, 255, 0.6),
+                0 0 25px rgba(100, 200, 255, 0.4),
+                0 0 50px rgba(100, 200, 255, 0.2),
+                3px 3px 0px rgba(0, 0, 0, 0.6);
+            transition: transform 0.15s ease-out, color 0.15s ease-out;
+            user-select: none;
+        }
+
+        #scoreValue.pop {
+            animation: scorePop 0.3s ease-out;
+        }
+
+        @keyframes scorePop {
+            0% { transform: scale(1); color: #fff; }
+            30% { transform: scale(1.5); color: #ffd700; }
+            60% { transform: scale(0.9); }
+            100% { transform: scale(1); color: #fff; }
+        }
+
+        /* ===== TRANSITION FLASH ===== */
+        #transitionFlash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #fff;
+            z-index: 200;
+            display: none;
+            pointer-events: none;
+        }
+
+        #transitionFlash.active {
+            display: block;
+            animation: transitionFlashAnim 0.6s ease-out forwards;
+        }
+
+        @keyframes transitionFlashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ===== GET READY TEXT ===== */
+        #getReady {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        #getReady.active {
+            display: flex;
+        }
+
+        #getReadyContent {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #getReadyText {
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
+            font-size: clamp(50px, 10vw, 100px);
+            color: #fff;
+            text-shadow:
+                0 0 15px rgba(255, 255, 255, 0.8),
+                0 0 30px rgba(100, 200, 255, 0.5),
+                3px 3px 0px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            animation: getReadyAnim 1.2s ease-out forwards;
+            user-select: none;
+        }
+
+        @keyframes getReadyAnim {
+            0% { opacity: 0; transform: scale(2); }
+            15% { opacity: 1; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        #tutorialHint {
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
+            font-size: clamp(18px, 3.5vw, 32px);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow:
+                0 0 10px rgba(255, 255, 255, 0.5),
+                2px 2px 0px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            animation: tutorialFade 2s ease-in-out 0.4s forwards;
+            user-select: none;
+        }
+
+        @keyframes tutorialFade {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #tutorialHint.visible {
+            animation: tutorialFade 0.5s ease-out 0.4s forwards, tutorialBlink 1.5s ease-in-out 1s infinite;
+        }
+
+        @keyframes tutorialBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
     </style>
 </head>
 
@@ -328,6 +474,22 @@
     <!-- Death Flash -->
     <div id="deathFlash"></div>
 
+    <!-- Score HUD -->
+    <div id="scoreHud">
+        <div id="scoreValue">0</div>
+    </div>
+
+    <!-- Transition Flash -->
+    <div id="transitionFlash"></div>
+
+    <!-- Get Ready -->
+    <div id="getReady">
+        <div id="getReadyContent">
+            <div id="getReadyText">GET READY!</div>
+            <div id="tutorialHint">Tap or Press SPACE to Fly</div>
+        </div>
+    </div>
+
     <canvas id="board"></canvas>
     <img id="characterSprite" src="./sprite.gif">
 
@@ -340,6 +502,8 @@
 
         //game state
         let gameStarted = false;
+        let getReadyPhase = false;
+        let hoverTime = 0;
 
         //character
         let characterWidth = 96;  //width/height ratio = 1080/1920 = 9/16
@@ -462,6 +626,14 @@
                 return;
             }
 
+            // End get-ready phase on first input
+            if (getReadyPhase) {
+                getReadyPhase = false;
+                document.getElementById('getReady').classList.remove('active');
+                if (pipeInterval) clearInterval(pipeInterval);
+                pipeInterval = setInterval(placePipes, 1000);
+            }
+
             jump(e);
         }
 
@@ -472,25 +644,64 @@
             pipeArray = [];
             velocityY = 0;
 
-            // Hide start screen
-            document.getElementById("startScreen").classList.add("hidden");
+            // Animate start screen exit
+            const startScreen = document.getElementById('startScreen');
+            startScreen.classList.add('exit');
 
-            // Activate game board and character
-            board.style.display = "block";
-            characterSprite.style.display = "block";
-            characterSprite.src = "./sprite.gif";
-            updateCharacterSprite();
+            // Show white flash after exit animation
+            setTimeout(() => {
+                const flash = document.getElementById('transitionFlash');
+                flash.classList.remove('active');
+                void flash.offsetWidth;
+                flash.classList.add('active');
 
-            // Stop home tune, fade in game music
-            sfxHome.pause();
-            sfxHome.currentTime = 0;
-            fadeInBgm(2000);
-            requestAnimationFrame(update);
-            if (pipeInterval) clearInterval(pipeInterval);
-            pipeInterval = setInterval(placePipes, 1000);
+                // Now hide start screen and show game
+                startScreen.classList.add('hidden');
+                startScreen.classList.remove('exit');
+
+                // Activate game board and character
+                board.style.display = "block";
+                characterSprite.style.display = "block";
+                characterSprite.src = "./sprite.gif";
+                updateCharacterSprite();
+
+                // Show "GET READY!" text
+                const getReady = document.getElementById('getReady');
+                const getReadyText = document.getElementById('getReadyText');
+                const tutorialHint = document.getElementById('tutorialHint');
+                getReadyText.style.animation = 'none';
+                tutorialHint.classList.remove('visible');
+                tutorialHint.style.animation = 'none';
+                void getReadyText.offsetWidth;
+                void tutorialHint.offsetWidth;
+                getReadyText.style.animation = '';
+                tutorialHint.style.animation = '';
+                tutorialHint.classList.add('visible');
+                getReady.classList.add('active');
+
+                // Enter get-ready hover phase (no gravity, no pipes)
+                // Waits for user input to begin
+                getReadyPhase = true;
+                hoverTime = 0;
+
+                // Show and reset score HUD
+                const scoreHud = document.getElementById('scoreHud');
+                const scoreVal = document.getElementById('scoreValue');
+                scoreHud.classList.add('active');
+                scoreVal.textContent = '0';
+
+                // Stop home tune, fade in game music
+                sfxHome.pause();
+                sfxHome.currentTime = 0;
+                fadeInBgm(2000);
+                requestAnimationFrame(update);
+            }, 600); // Wait for exit animation to finish
         }
 
         function showGameOver() {
+            // Hide score HUD
+            document.getElementById('scoreHud').classList.remove('active');
+
             // Screen shake
             document.body.classList.add('shake');
             setTimeout(() => document.body.classList.remove('shake'), 500);
@@ -533,6 +744,9 @@
 
             // Hide game over
             hideGameOver();
+
+            // Hide score HUD
+            document.getElementById('scoreHud').classList.remove('active');
 
             // Show start screen with fade-in
             const startScreen = document.getElementById('startScreen');
@@ -587,6 +801,13 @@
                 return;
             }
 
+            // Get-ready hover phase — gentle float, no gravity
+            if (getReadyPhase) {
+                hoverTime += 0.05;
+                character.y = characterY + Math.sin(hoverTime * 3) * 15;
+                return;
+            }
+
             //character physics
             velocityY += gravity;
             character.y = Math.max(character.y + velocityY, 0);
@@ -619,7 +840,15 @@
 
                 if (!pipe.passed && character.x > pipe.x + pipe.width) {
                     score += 0.5;
-                    if (Number.isInteger(score)) { playSound(sfxPoint); }
+                    if (Number.isInteger(score)) {
+                        playSound(sfxPoint);
+                        // Update score HUD with pop animation
+                        const scoreVal = document.getElementById('scoreValue');
+                        scoreVal.textContent = score;
+                        scoreVal.classList.remove('pop');
+                        void scoreVal.offsetWidth;
+                        scoreVal.classList.add('pop');
+                    }
                     pipe.passed = true;
                 }
 
@@ -641,11 +870,6 @@
             while (pipeArray.length > 0 && pipeArray[0].x < -pipeWidth) {
                 pipeArray.shift();
             }
-
-            //score
-            context.fillStyle = "white";
-            context.font = "45px 'Mario-Kart-DS'";
-            context.fillText(score, 5, 45);
         }
 
         function placePipes() {
