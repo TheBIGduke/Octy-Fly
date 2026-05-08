@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Container so the <img> can be positioned over the canvas */
+        #gameContainer {
+            position: relative;
+            display: inline-block;
+        }
+
+        #board {
+            display: block;
+            background-image: url("./bg.gif");
+        }
+
+        /* The animated GIF character — positioned absolutely over the canvas */
+        #characterSprite {
+            position: absolute;
+            pointer-events: none;
+            image-rendering: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gameContainer">
+        <canvas id="board"></canvas>
+        <img id="characterSprite" src="./sprite.gif">
+    </div>
+
+    <script>
+        //board
+        let board;
+        let boardWidth = 360;
+        let boardHeight = 640;
+        let context;
+
+        //character
+        let characterWidth = 96;  //width/height ratio = 1080/1920 = 9/16
+        let characterHeight = 150;
+        let characterX = boardWidth / 3;
+        let characterY = boardHeight / 2;
+        let characterSprite; // the <img> DOM element
+
+        let character = {
+            x: characterX,
+            y: characterY,
+            width: characterWidth,
+            height: characterHeight
+        }
+
+        //pipes
+        let pipeArray = [];
+        let pipeWidth = 64;
+        let pipeHeight = 512;
+        let pipeX = boardWidth;
+        let pipeY = 0;
+
+        let topPipeImg;
+        let bottomPipeImg;
+
+        //physics
+        let velocityX = -3;
+        let velocityY = 0;
+        let gravity = 0.4;
+        let hitboxPadding = 5;
+
+        let gameOver = false;
+        let score = 0;
+
+        //sounds
+        const sfxWing = new Audio("./sfx_wing.wav");
+        const sfxPoint = new Audio("./sfx_point.wav");
+        const sfxHit = new Audio("./sfx_hit.wav");
+        const sfxDie = new Audio("./sfx_die.wav");
+        const sfxSwooshing = new Audio("./sfx_swooshing.wav");
+        const bgm = new Audio("./bgm_mario.mp3");
+        bgm.loop = true;
+        sfxWing.playbackRate = 1.8;
+
+        function playSound(audio) {
+            const clone = audio.cloneNode();
+            clone.playbackRate = audio.playbackRate;
+            clone.play();
+        }
+
+        // Move the <img> element to match the character's position
+        function updateCharacterSprite() {
+            characterSprite.style.left = character.x + "px";
+            characterSprite.style.top = character.y + "px";
+            characterSprite.style.width = character.width + "px";
+            characterSprite.style.height = character.height + "px";
+        }
+
+        window.onload = function () {
+            board = document.getElementById("board");
+            board.height = boardHeight;
+            board.width = boardWidth;
+            context = board.getContext("2d");
+
+            // The character is an <img> element over the canvas — NOT drawn on canvas
+            // This is the ONLY way to get animated GIFs working, because
+            // canvas drawImage() always captures just the first frame of a GIF.
+            characterSprite = document.getElementById("characterSprite");
+            updateCharacterSprite();
+
+            topPipeImg = new Image();
+            topPipeImg.src = "./toppipe.png";
+
+            bottomPipeImg = new Image();
+            bottomPipeImg.src = "./bottompipe.png";
+
+            bgm.play();
+            requestAnimationFrame(update);
+            setInterval(placePipes, 1500);
+            document.addEventListener("keydown", moveCharacter);
+        }
+
+        function update() {
+            requestAnimationFrame(update);
+
+            context.clearRect(0, 0, board.width, board.height);
+
+            // Move the sprite <img> to current position (GIF animates natively)
+            updateCharacterSprite();
+
+            if (gameOver) {
+                context.fillStyle = "white";
+                context.font = "45px sans-serif";
+                context.fillText("GAME OVER", 5, 90);
+                return;
+            }
+
+            //character physics
+            velocityY += gravity;
+            character.y = Math.max(character.y + velocityY, 0);
+
+            if (character.y > board.height) {
+                if (!gameOver) { playSound(sfxDie); }
+                gameOver = true;
+            }
+
+            //pipes
+            for (let i = 0; i < pipeArray.length; i++) {
+                let pipe = pipeArray[i];
+                pipe.x += velocityX;
+                context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+
+                if (!pipe.passed && character.x > pipe.x + pipe.width) {
+                    score += 0.5;
+                    if (Number.isInteger(score)) { playSound(sfxPoint); }
+                    pipe.passed = true;
+                }
+
+                if (detectCollision(character, pipe)) {
+                    if (!gameOver) { playSound(sfxHit); setTimeout(() => playSound(sfxDie), 500); }
+                    gameOver = true;
+                }
+            }
+
+            //clear pipes that are off screen
+            while (pipeArray.length > 0 && pipeArray[0].x < -pipeWidth) {
+                pipeArray.shift();
+            }
+
+            //score
+            context.fillStyle = "white";
+            context.font = "45px sans-serif";
+            context.fillText(score, 5, 45);
+        }
+
+        function placePipes() {
+            if (gameOver) { return; }
+
+            let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2);
+            let openingSpace = board.height / 2;
+
+            pipeArray.push({
+                img: topPipeImg,
+                x: pipeX, y: randomPipeY,
+                width: pipeWidth, height: pipeHeight,
+                passed: false
+            });
+
+            pipeArray.push({
+                img: bottomPipeImg,
+                x: pipeX, y: randomPipeY + pipeHeight + openingSpace,
+                width: pipeWidth, height: pipeHeight,
+                passed: false
+            });
+        }
+
+        function moveCharacter(e) {
+            if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
+                velocityY = -6;
+                playSound(sfxWing);
+
+                if (gameOver) {
+                    playSound(sfxSwooshing);
+                    character.y = characterY;
+                    pipeArray = [];
+                    score = 0;
+                    gameOver = false;
+                }
+            }
+        }
+
+        function detectCollision(a, b) {
+            let ax = a.x + hitboxPadding;
+            let ay = a.y + hitboxPadding;
+            let aw = a.width - hitboxPadding * 2;
+            let ah = a.height - hitboxPadding * 2;
+            return ax < b.x + b.width &&
+                ax + aw > b.x &&
+                ay < b.y + b.height &&
+                ay + ah > b.y;
+        }
+    </script>
+</body>
+
+</html>
