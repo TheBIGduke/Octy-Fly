@@ -10,17 +10,20 @@
             font-family: 'Courier New', Courier, monospace;
             text-align: center;
             margin: 0;
-        }
-
-        /* Container so the <img> can be positioned over the canvas */
-        #gameContainer {
-            position: relative;
-            display: inline-block;
+            padding: 0;
+            background-color: #000;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #board {
-            display: block;
             background-image: url("./bg.gif");
+            background-size: cover;
+            background-position: center;
         }
 
         /* The animated GIF character — positioned absolutely over the canvas */
@@ -33,16 +36,14 @@
 </head>
 
 <body>
-    <div id="gameContainer">
-        <canvas id="board"></canvas>
-        <img id="characterSprite" src="./sprite.gif">
-    </div>
+    <canvas id="board"></canvas>
+    <img id="characterSprite" src="./sprite.gif">
 
     <script>
         //board
         let board;
-        let boardWidth = 360;
-        let boardHeight = 640;
+        let boardWidth = window.innerWidth;
+        let boardHeight = window.innerHeight;
         let context;
 
         //character
@@ -61,19 +62,18 @@
 
         //pipes
         let pipeArray = [];
-        let pipeWidth = 64;
+        let pipeWidth = 200;
         let pipeHeight = 512;
-        let pipeX = boardWidth;
+        let pipeX = window.innerWidth;
         let pipeY = 0;
 
-        let topPipeImg;
-        let bottomPipeImg;
+        let pipeImages = [];
 
         //physics
-        let velocityX = -3;
+        let velocityX = -15;
         let velocityY = 0;
-        let gravity = 0.4;
-        let hitboxPadding = 5;
+        let gravity = 0.3;
+        let hitboxPadding = 30;
 
         let gameOver = false;
         let score = 0;
@@ -104,26 +104,38 @@
 
         window.onload = function () {
             board = document.getElementById("board");
-            board.height = boardHeight;
-            board.width = boardWidth;
+            characterSprite = document.getElementById("characterSprite");
+            resizeBoard();
             context = board.getContext("2d");
 
             // The character is an <img> element over the canvas — NOT drawn on canvas
             // This is the ONLY way to get animated GIFs working, because
             // canvas drawImage() always captures just the first frame of a GIF.
-            characterSprite = document.getElementById("characterSprite");
             updateCharacterSprite();
 
-            topPipeImg = new Image();
-            topPipeImg.src = "./toppipe.png";
-
-            bottomPipeImg = new Image();
-            bottomPipeImg.src = "./bottompipe.png";
+            for (let i = 1; i <= 5; i++) {
+                let img = new Image();
+                img.src = `./${i}.png`;
+                pipeImages.push(img);
+            }
 
             bgm.play();
             requestAnimationFrame(update);
             setInterval(placePipes, 1500);
             document.addEventListener("keydown", moveCharacter);
+            window.addEventListener("resize", resizeBoard);
+        }
+
+        function resizeBoard() {
+            boardWidth = window.innerWidth;
+            boardHeight = window.innerHeight;
+            board.width = boardWidth;
+            board.height = boardHeight;
+            pipeX = boardWidth;
+            characterX = boardWidth / 3;
+            characterY = boardHeight / 2;
+            character.x = characterX;
+            updateCharacterSprite();
         }
 
         function update() {
@@ -154,7 +166,15 @@
             for (let i = 0; i < pipeArray.length; i++) {
                 let pipe = pipeArray[i];
                 pipe.x += velocityX;
-                context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+                if (pipe.isTop) {
+                    context.save();
+                    context.translate(pipe.x + pipe.width / 2, pipe.y + pipe.height / 2);
+                    context.rotate(Math.PI);
+                    context.drawImage(pipe.img, -pipe.width / 2, -pipe.height / 2, pipe.width, pipe.height);
+                    context.restore();
+                } else {
+                    context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+                }
 
                 if (!pipe.passed && character.x > pipe.x + pipe.width) {
                     score += 0.5;
@@ -185,18 +205,23 @@
             let randomPipeY = pipeY - pipeHeight / 4 - Math.random() * (pipeHeight / 2);
             let openingSpace = board.height / 2;
 
+            let topImg = pipeImages[Math.floor(Math.random() * pipeImages.length)];
+            let bottomImg = pipeImages[Math.floor(Math.random() * pipeImages.length)];
+
             pipeArray.push({
-                img: topPipeImg,
+                img: topImg,
                 x: pipeX, y: randomPipeY,
                 width: pipeWidth, height: pipeHeight,
-                passed: false
+                passed: false,
+                isTop: true
             });
 
             pipeArray.push({
-                img: bottomPipeImg,
+                img: bottomImg,
                 x: pipeX, y: randomPipeY + pipeHeight + openingSpace,
                 width: pipeWidth, height: pipeHeight,
-                passed: false
+                passed: false,
+                isTop: false
             });
         }
 
