@@ -65,6 +65,11 @@
             display: none;
         }
 
+        /* Start screen fade-in */
+        #startScreen.fade-in {
+            animation: fadeIn 0.8s ease-in forwards;
+        }
+
         #startTitle {
             position: absolute;
             top: 10vh;
@@ -87,6 +92,86 @@
             height: clamp(450px, 50vh, 600px);
             image-rendering: auto;
             pointer-events: none;
+        }
+
+        /* ===== GAME OVER OVERLAY ===== */
+        #gameOverOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 90;
+            pointer-events: none;
+        }
+
+        #gameOverOverlay.active {
+            display: flex;
+        }
+
+        #gameOverBg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(180, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.85) 100%);
+            opacity: 0;
+            animation: overlayFadeIn 0.6s ease-out 0.3s forwards;
+        }
+
+        #gameOverText {
+            position: relative;
+            z-index: 2;
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
+            font-size: clamp(50px, 10vw, 120px);
+            color: #ff3333;
+            text-shadow:
+                0 0 20px rgba(255, 0, 0, 0.8),
+                0 0 40px rgba(255, 0, 0, 0.5),
+                0 0 80px rgba(255, 0, 0, 0.3),
+                4px 4px 0px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            transform: scale(3);
+            animation: gameOverSlam 0.5s ease-out 0.5s forwards;
+            user-select: none;
+        }
+
+        #gameOverScore {
+            position: relative;
+            z-index: 2;
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
+            font-size: clamp(24px, 5vw, 48px);
+            color: #ffd700;
+            text-shadow:
+                0 0 10px rgba(255, 215, 0, 0.6),
+                2px 2px 0px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+            opacity: 0;
+            animation: scoreReveal 0.5s ease-out 1s forwards;
+            user-select: none;
+        }
+
+        /* Red flash on death */
+        #deathFlash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 0, 0, 0.6);
+            z-index: 80;
+            display: none;
+            pointer-events: none;
+        }
+
+        #deathFlash.active {
+            display: block;
+            animation: flashPulse 0.3s ease-out forwards;
         }
 
         @keyframes titlePulse {
@@ -113,16 +198,115 @@
             }
         }
 
-        @keyframes subtitleBlink {
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
 
-            0%,
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes gameOverSlam {
+            0% {
+                opacity: 0;
+                transform: scale(3);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(0.9);
+            }
+
+            80% {
+                transform: scale(1.05);
+            }
+
             100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes scoreReveal {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes flashPulse {
+            0% {
                 opacity: 1;
             }
 
-            50% {
-                opacity: 0.3;
+            100% {
+                opacity: 0;
             }
+        }
+
+        @keyframes screenShake {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            10% {
+                transform: translate(-8px, 6px);
+            }
+
+            20% {
+                transform: translate(8px, -4px);
+            }
+
+            30% {
+                transform: translate(-6px, 8px);
+            }
+
+            40% {
+                transform: translate(6px, -6px);
+            }
+
+            50% {
+                transform: translate(-4px, 4px);
+            }
+
+            60% {
+                transform: translate(4px, -2px);
+            }
+
+            70% {
+                transform: translate(-2px, 2px);
+            }
+
+            80% {
+                transform: translate(2px, -1px);
+            }
+
+            90% {
+                transform: translate(-1px, 1px);
+            }
+        }
+
+        body.shake {
+            animation: screenShake 0.5s ease-out;
         }
     </style>
 </head>
@@ -133,6 +317,16 @@
         <div id="startTitle">OctyFly</div>
         <img id="startSprite" src="./sprite2.gif" alt="Octy">
     </div>
+
+    <!-- Game Over Overlay -->
+    <div id="gameOverOverlay">
+        <div id="gameOverBg"></div>
+        <div id="gameOverText">GAME OVER</div>
+        <div id="gameOverScore"></div>
+    </div>
+
+    <!-- Death Flash -->
+    <div id="deathFlash"></div>
 
     <canvas id="board"></canvas>
     <img id="characterSprite" src="./sprite.gif">
@@ -181,12 +375,14 @@
         let pipeInterval;
 
         //sounds
-        const sfxWing = new Audio("./sfx_wing.wav");
-        const sfxPoint = new Audio("./sfx_point.wav");
-        const sfxHit = new Audio("./sfx_hit.wav");
-        const sfxDie = new Audio("./sfx_die.wav");
-        const sfxSwooshing = new Audio("./sfx_swooshing.wav");
-        const bgm = new Audio("./bgm_mario.mp3");
+        const sfxWing = new Audio("./sfx/sfx_wing.wav");
+        const sfxPoint = new Audio("./sfx/sfx_point.wav");
+        const sfxHit = new Audio("./sfx/sfx_hit.wav");
+        const sfxDie = new Audio("./sfx/sfx_die.wav");
+        const sfxSwooshing = new Audio("./sfx/sfx_swooshing.wav");
+        const sfxHome = new Audio("./sfx/sfx_home.wav");
+        sfxHome.loop = true;
+        const bgm = new Audio("./sfx/sfx_loop.wav");
         bgm.loop = true;
         sfxWing.playbackRate = 1.8;
 
@@ -194,6 +390,30 @@
             const clone = audio.cloneNode();
             clone.playbackRate = audio.playbackRate;
             clone.play();
+        }
+
+        let bgmFadeInterval;
+        function fadeInBgm(duration) {
+            bgm.volume = 0;
+            bgm.play();
+            clearInterval(bgmFadeInterval);
+            const step = 0.05;
+            const interval = duration / (1 / step);
+            bgmFadeInterval = setInterval(() => {
+                if (bgm.volume + step >= 1) {
+                    bgm.volume = 1;
+                    clearInterval(bgmFadeInterval);
+                } else {
+                    bgm.volume += step;
+                }
+            }, interval);
+        }
+
+        function stopBgm() {
+            clearInterval(bgmFadeInterval);
+            bgm.pause();
+            bgm.currentTime = 0;
+            bgm.volume = 1;
         }
 
         // Move the <img> element to match the character's position
@@ -226,6 +446,9 @@
             document.addEventListener("touchstart", handleInput);
             document.addEventListener("mousedown", handleInput);
             window.addEventListener("resize", resizeBoard);
+
+            // Play home tune on start screen
+            sfxHome.play();
         }
 
         function handleInput(e) {
@@ -244,6 +467,10 @@
 
         function startGame() {
             gameStarted = true;
+            gameOver = false;
+            score = 0;
+            pipeArray = [];
+            velocityY = 0;
 
             // Hide start screen
             document.getElementById("startScreen").classList.add("hidden");
@@ -254,10 +481,83 @@
             characterSprite.src = "./sprite.gif";
             updateCharacterSprite();
 
-            // Start the game
-            bgm.play();
+            // Stop home tune, fade in game music
+            sfxHome.pause();
+            sfxHome.currentTime = 0;
+            fadeInBgm(2000);
             requestAnimationFrame(update);
+            if (pipeInterval) clearInterval(pipeInterval);
             pipeInterval = setInterval(placePipes, 1000);
+        }
+
+        function showGameOver() {
+            // Screen shake
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+
+            // Red flash
+            const flash = document.getElementById('deathFlash');
+            flash.classList.remove('active');
+            void flash.offsetWidth; // force reflow
+            flash.classList.add('active');
+
+            // Show game over overlay with score
+            const overlay = document.getElementById('gameOverOverlay');
+            const scoreText = document.getElementById('gameOverScore');
+            scoreText.textContent = 'Score: ' + Math.floor(score);
+
+            // Reset animations
+            overlay.classList.remove('active');
+            void overlay.offsetWidth;
+            overlay.classList.add('active');
+
+            // Reset child animations
+            const bg = document.getElementById('gameOverBg');
+            const text = document.getElementById('gameOverText');
+            bg.style.animation = 'none'; void bg.offsetWidth; bg.style.animation = '';
+            text.style.animation = 'none'; void text.offsetWidth; text.style.animation = '';
+            scoreText.style.animation = 'none'; void scoreText.offsetWidth; scoreText.style.animation = '';
+        }
+
+        function hideGameOver() {
+            document.getElementById('gameOverOverlay').classList.remove('active');
+            document.getElementById('deathFlash').classList.remove('active');
+        }
+
+        function resetToStartScreen() {
+            gameStarted = false;
+            gameOver = false;
+            score = 0;
+            pipeArray = [];
+            velocityY = 0;
+
+            // Hide game over
+            hideGameOver();
+
+            // Show start screen with fade-in
+            const startScreen = document.getElementById('startScreen');
+            startScreen.classList.remove('hidden', 'fade-in');
+            void startScreen.offsetWidth;
+            startScreen.classList.add('fade-in');
+
+            board.style.display = "none";
+            characterSprite.style.display = "none";
+
+            // Stop game sound/loops, start home tune
+            stopBgm();
+            if (pipeInterval) clearInterval(pipeInterval);
+            sfxHome.play();
+
+            // Reset character position
+            character.y = characterY;
+        }
+
+        function endGame() {
+            stopBgm();
+            showGameOver();
+            setTimeout(() => {
+                resetToStartScreen();
+            }, 3500); // 3.5 second delay to see game over screen
         }
 
         function resizeBoard() {
@@ -275,6 +575,7 @@
         }
 
         function update() {
+            if (!gameStarted) return;
             requestAnimationFrame(update);
 
             context.clearRect(0, 0, board.width, board.height);
@@ -283,9 +584,6 @@
             updateCharacterSprite();
 
             if (gameOver) {
-                context.fillStyle = "white";
-                context.font = "45px 'Mario-Kart-DS'";
-                context.fillText("GAME OVER", 5, 90);
                 return;
             }
 
@@ -300,6 +598,7 @@
                     setTimeout(() => {
                         if (gameOver) characterSprite.style.display = "none";
                     }, 1000);
+                    endGame();
                 }
                 gameOver = true;
             }
@@ -332,6 +631,7 @@
                         setTimeout(() => {
                             if (gameOver) characterSprite.style.display = "none";
                         }, 1000);
+                        endGame();
                     }
                     gameOver = true;
                 }
@@ -384,18 +684,10 @@
             if (e && e.type === "touchstart") {
                 // e.preventDefault(); // Uncomment if you want to prevent default touch behavior
             }
+            if (gameOver) return; // Prevent jumping after loss
+
             velocityY = -6;
             playSound(sfxWing);
-
-            if (gameOver) {
-                playSound(sfxSwooshing);
-                character.y = characterY;
-                pipeArray = [];
-                score = 0;
-                gameOver = false;
-                characterSprite.src = "./sprite.gif";
-                characterSprite.style.display = "block";
-            }
         }
 
         function detectCollision(a, b) {
