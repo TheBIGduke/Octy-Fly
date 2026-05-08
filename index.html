@@ -61,9 +61,7 @@
             cursor: pointer;
         }
 
-        #startScreen.hidden {
-            display: none;
-        }
+        #startScreen.hidden { display: none; }
 
         /* Start screen exit animation */
         #startScreen.exit {
@@ -72,9 +70,7 @@
         }
 
         /* Start screen fade-in */
-        #startScreen.fade-in {
-            animation: fadeIn 0.8s ease-in forwards;
-        }
+        #startScreen.fade-in { animation: fadeIn 0.8s ease-in forwards; }
 
         #startTitle {
             position: absolute;
@@ -115,15 +111,10 @@
         @keyframes touchPulse {
 
             0%,
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.6;
-            }
-
-            50% {
-                transform: translate(-50%, -50%) scale(1.15);
-                opacity: 0.9;
-            }
+            100% { transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6; }
+        50% { transform: translate(-50%, -50%) scale(1.15);
+                opacity: 0.9; }
         }
 
         /* ===== GAME OVER OVERLAY ===== */
@@ -141,9 +132,7 @@
             pointer-events: none;
         }
 
-        #gameOverOverlay.active {
-            display: flex;
-        }
+        #gameOverOverlay.active { display: flex; }
 
         #gameOverBg {
             position: absolute;
@@ -153,7 +142,7 @@
             height: 100%;
             background: radial-gradient(ellipse at center, rgba(180, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.85) 100%);
             opacity: 0;
-            animation: overlayFadeIn 0.6s ease-out 0.3s forwards;
+            animation: fadeIn 0.6s ease-out 0.3s forwards;
         }
 
         #gameOverText {
@@ -185,9 +174,7 @@
             transform: translateY(100%);
         }
 
-        #tbdGif.active {
-            transform: translateY(0);
-        }
+        #tbdGif.active { transform: translateY(0); }
 
         #gameOverScore {
             position: relative;
@@ -224,157 +211,73 @@
         @keyframes titlePulse {
 
             0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.04);
-            }
+            100% { transform: scale(1); }
+        50% { transform: scale(1.04); }
         }
 
         @keyframes titleFloat {
 
             0%,
-            100% {
-                margin-top: 0px;
-            }
-
-            50% {
-                margin-top: -15px;
-            }
+            100% { margin-top: 0px; }
+        50% { margin-top: -15px; }
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+        to { opacity: 1; }
         }
 
         @keyframes startScreenExit {
-            0% {
-                opacity: 1;
+            0% { opacity: 1;
                 transform: scale(1);
-                filter: brightness(1);
-            }
-
-            40% {
-                opacity: 1;
+                filter: brightness(1); }
+        40% { opacity: 1;
                 transform: scale(1.1);
-                filter: brightness(1.8);
-            }
-
-            100% {
-                opacity: 0;
+                filter: brightness(1.8); }
+        100% { opacity: 0;
                 transform: scale(1.3);
-                filter: brightness(3);
-            }
+                filter: brightness(3); }
         }
 
-        @keyframes overlayFadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
 
         @keyframes gameOverSlam {
-            0% {
-                opacity: 0;
-                transform: scale(3);
-            }
-
-            60% {
-                opacity: 1;
-                transform: scale(0.9);
-            }
-
-            80% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0% { opacity: 0;
+                transform: scale(3); }
+        60% { opacity: 1;
+                transform: scale(0.9); }
+        80% { transform: scale(1.05); }
+        100% { opacity: 1;
+                transform: scale(1); }
         }
 
         @keyframes scoreReveal {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0;
+                transform: translateY(15px); }
+        to { opacity: 1;
+                transform: translateY(0); }
         }
 
         @keyframes flashPulse {
-            0% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0;
-            }
+            0% { opacity: 1; }
+        100% { opacity: 0; }
         }
 
         @keyframes screenShake {
 
             0%,
-            100% {
-                transform: translate(0, 0);
-            }
-
-            10% {
-                transform: translate(-8px, 6px);
-            }
-
-            20% {
-                transform: translate(8px, -4px);
-            }
-
-            30% {
-                transform: translate(-6px, 8px);
-            }
-
-            40% {
-                transform: translate(6px, -6px);
-            }
-
-            50% {
-                transform: translate(-4px, 4px);
-            }
-
-            60% {
-                transform: translate(4px, -2px);
-            }
-
-            70% {
-                transform: translate(-2px, 2px);
-            }
-
-            80% {
-                transform: translate(2px, -1px);
-            }
-
-            90% {
-                transform: translate(-1px, 1px);
-            }
+            100% { transform: translate(0, 0); }
+        10% { transform: translate(-8px, 6px); }
+        20% { transform: translate(8px, -4px); }
+        30% { transform: translate(-6px, 8px); }
+        40% { transform: translate(6px, -6px); }
+        50% { transform: translate(-4px, 4px); }
+        60% { transform: translate(4px, -2px); }
+        70% { transform: translate(-2px, 2px); }
+        80% { transform: translate(2px, -1px); }
+        90% { transform: translate(-1px, 1px); }
         }
 
-        body.shake {
-            animation: screenShake 0.5s ease-out;
-        }
+        body.shake { animation: screenShake 0.5s ease-out; }
 
         /* ===== SCORE HUD ===== */
         #scoreHud {
@@ -389,9 +292,7 @@
             pointer-events: none;
         }
 
-        #scoreHud.active {
-            display: flex;
-        }
+        #scoreHud.active { display: flex; }
 
         #scoreValue {
             font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
@@ -406,29 +307,16 @@
             user-select: none;
         }
 
-        #scoreValue.pop {
-            animation: scorePop 0.3s ease-out;
-        }
+        #scoreValue.pop { animation: scorePop 0.3s ease-out; }
 
         @keyframes scorePop {
-            0% {
-                transform: scale(1);
-                color: #fff;
-            }
-
-            30% {
-                transform: scale(1.5);
-                color: #ffd700;
-            }
-
-            60% {
-                transform: scale(0.9);
-            }
-
-            100% {
-                transform: scale(1);
-                color: #fff;
-            }
+            0% { transform: scale(1);
+                color: #fff; }
+        30% { transform: scale(1.5);
+                color: #ffd700; }
+        60% { transform: scale(0.9); }
+        100% { transform: scale(1);
+                color: #fff; }
         }
 
         /* ===== TRANSITION FLASH ===== */
@@ -450,13 +338,8 @@
         }
 
         @keyframes transitionFlashAnim {
-            0% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0;
-            }
+            0% { opacity: 1; }
+        100% { opacity: 0; }
         }
 
         /* ===== GET READY TEXT ===== */
@@ -473,9 +356,7 @@
             pointer-events: none;
         }
 
-        #getReady.active {
-            display: flex;
-        }
+        #getReady.active { display: flex; }
 
         #getReadyContent {
             display: flex;
@@ -498,20 +379,12 @@
         }
 
         @keyframes getReadyAnim {
-            0% {
-                opacity: 0;
-                transform: scale(2);
-            }
-
-            15% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0% { opacity: 0;
+                transform: scale(2); }
+        15% { opacity: 1;
+                transform: scale(1); }
+        100% { opacity: 1;
+                transform: scale(1); }
         }
 
         #tutorialHint {
@@ -527,31 +400,19 @@
         }
 
         @keyframes tutorialFade {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0;
+                transform: translateY(10px); }
+        100% { opacity: 1;
+                transform: translateY(0); }
         }
 
-        #tutorialHint.visible {
-            animation: tutorialFade 0.5s ease-out 0.4s forwards, tutorialBlink 1.5s ease-in-out 1s infinite;
-        }
+        #tutorialHint.visible { animation: tutorialFade 0.5s ease-out 0.4s forwards, tutorialBlink 1.5s ease-in-out 1s infinite; }
 
         @keyframes tutorialBlink {
 
             0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.4;
-            }
+            100% { opacity: 1; }
+        50% { opacity: 0.4; }
         }
 
         #octopyLogo {
@@ -566,9 +427,7 @@
             transition: opacity 0.3s ease;
         }
 
-        #octopyLogo.hidden {
-            opacity: 0;
-        }
+        #octopyLogo.hidden { opacity: 0; }
     </style>
 </head>
 
@@ -614,57 +473,44 @@
     <!-- Octopy Logo (Always Visible) -->
     <img id="octopyLogo" src="./Octopy.png" alt="Octopy Logo">
 
-
-
     <script>
-        //board
-        let board;
+        // ==============================================================
+        //  CUSTOMIZABLE SETTINGS (Adjust these to change game feel)
+        // ==============================================================
+        let pipeWidth = 200;            // How wide the pipes are
+        let pipeHeight = 600;           // Height of the pipe sprites
+        let velocityX = -15;            // Initial horizontal speed (negative moves left)
+        let gravity = 0.3;              // How fast the character falls
+        let jumpPower = -6;             // How high the character jumps
+        let hitboxPadding = 30;         // Padding for collision (smaller = more forgiving)
+        let characterWidth = 96;        // Visual width of the character
+        let characterHeight = 150;      // Visual height of the character
+        let homeMusicVolume = 0.3;      // Volume of the start screen music (0.0 to 1.0)
+        let gameMusicVolume = 0.4;      // Max volume of the gameplay music (0.0 to 1.0)
+        // ==============================================================
+
+        // Internal Game State (Avoid changing these)
+        let board, context, characterSprite;
         let boardWidth = window.innerWidth;
         let boardHeight = window.innerHeight;
-        let context;
-
-        //game state
         let gameStarted = false;
         let getReadyPhase = false;
         let hoverTime = 0;
-        let hardMode = false;
-
-        //character
-        let characterWidth = 96;  //width/height ratio = 1080/1920 = 9/16
-        let characterHeight = 150;
-        let characterX = boardWidth / 3;
-        let characterY = boardHeight / 2;
-        let characterSprite; // the <img> DOM element
-
-        let character = {
-            x: characterX,
-            y: characterY,
-            width: characterWidth,
-            height: characterHeight
-        }
-
-        //pipes
-        let pipeArray = [];
-        let pipeWidth = 200;
-        let pipeHeight = 600;
-        let pipeX = window.innerWidth;
-        let pipeY = 0;
-
-        let pipeImages = [];
-
-        //physics
-        let velocityX = -15;
-        let velocityY = 0;
-        let gravity = 0.3;
-        let hitboxPadding = 30;
-
         let gameOver = false;
         let score = 0;
         let pipeInterval;
         let tbdGif;
         let tbdShownAt19 = false;
+        let pipeArray = [];
+        let pipeImages = [];
+        let pipeX = window.innerWidth;
+        let pipeY = 0;
+        let velocityY = 0;
 
-        //sounds
+        let characterX = boardWidth / 3;
+        let characterY = boardHeight / 2;
+        let character = { x: characterX, y: characterY, width: characterWidth, height: characterHeight };
+
         const sfxWing = new Audio("./sfx/sfx_wing.wav");
         const sfxPoint = new Audio("./sfx/sfx_point.wav");
         const sfxHit = new Audio("./sfx/sfx_hit.wav");
@@ -672,7 +518,7 @@
         const sfxSwooshing = new Audio("./sfx/sfx_swooshing.wav");
         const sfxHome = new Audio("./sfx/sfx_home.wav");
         sfxHome.loop = true;
-        sfxHome.volume = 0.3;
+        sfxHome.volume = homeMusicVolume;
         const bgm = new Audio("./sfx/sfx_loop.wav");
         bgm.loop = true;
         bgm.volume = 0;
@@ -686,7 +532,7 @@
 
         let bgmFadeInterval;
         function fadeInBgm(duration) {
-            const targetVolume = 0.4;
+            const targetVolume = gameMusicVolume;
             bgm.volume = 0;
             bgm.play();
             clearInterval(bgmFadeInterval);
@@ -1001,7 +847,6 @@
                         void scoreVal.offsetWidth;
                         scoreVal.classList.add('pop');
 
-                        // Activate hard mode at 20 points
                         // Increase difficulty every 20 points
                         if (score > 0 && score % 20 === 0) {
                             increaseDifficulty();
@@ -1054,28 +899,17 @@
                 isTop: true
             });
 
-            pipeArray.push({
-                img: bottomImg,
+            pipeArray.push({ img: bottomImg,
                 x: pipeX, y: randomPipeY + pipeHeight + openingSpace,
                 width: pipeWidth, height: pipeHeight,
                 passed: false,
                 isTop: false
-            });
-        }
+            }); }
 
-        function moveCharacter(e) {
-            if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
-                jump();
-            }
-        }
+        function jump() {
+            if (gameOver) return;
 
-        function jump(e) {
-            if (e && e.type === "touchstart") {
-                // e.preventDefault(); // Uncomment if you want to prevent default touch behavior
-            }
-            if (gameOver) return; // Prevent jumping after loss
-
-            velocityY = -6;
+            velocityY = jumpPower;
             playSound(sfxWing);
         }
 
