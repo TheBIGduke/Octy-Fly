@@ -4,10 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird</title>
+    <title>OctyFly</title>
     <style>
+        @font-face {
+            font-family: 'Mario-Kart-DS';
+            src: url('https://static.wfonts.com/data/2014/06/09/mario-kart-ds/Mario-Kart-DS.ttf') format('truetype');
+            font-display: swap;
+        }
+
         body {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
             text-align: center;
             margin: 0;
             padding: 0;
@@ -32,10 +38,102 @@
             pointer-events: none;
             image-rendering: auto;
         }
+
+        /* Start screen overlay */
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("./home_bg.gif");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            -ms-interpolation-mode: nearest-neighbor;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        #startScreen.hidden {
+            display: none;
+        }
+
+        #startTitle {
+            position: absolute;
+            top: 10vh;
+            font-family: 'Mario-Kart-DS', 'Courier New', Courier, monospace;
+            font-size: clamp(90px, 12vw, 140px);
+            color: #fff;
+            text-shadow:
+                0 0 10px rgba(255, 200, 50, 0.8),
+                0 0 30px rgba(255, 150, 0, 0.6),
+                0 0 60px rgba(255, 100, 0, 0.4),
+                3px 3px 0px rgba(0, 0, 0, 0.5);
+            animation: titlePulse 2s ease-in-out infinite, titleFloat 3s ease-in-out infinite;
+            user-select: none;
+        }
+
+        #startSprite {
+            position: absolute;
+            bottom: -13px;
+            left: -10px;
+            height: clamp(450px, 50vh, 600px);
+            image-rendering: auto;
+            pointer-events: none;
+        }
+
+        @keyframes titlePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.04);
+            }
+        }
+
+        @keyframes titleFloat {
+
+            0%,
+            100% {
+                margin-top: 0px;
+            }
+
+            50% {
+                margin-top: -15px;
+            }
+        }
+
+        @keyframes subtitleBlink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Start Screen -->
+    <div id="startScreen">
+        <div id="startTitle">OctyFly</div>
+        <img id="startSprite" src="./sprite2.gif" alt="Octy">
+    </div>
+
     <canvas id="board"></canvas>
     <img id="characterSprite" src="./sprite.gif">
 
@@ -45,6 +143,9 @@
         let boardWidth = window.innerWidth;
         let boardHeight = window.innerHeight;
         let context;
+
+        //game state
+        let gameStarted = false;
 
         //character
         let characterWidth = 96;  //width/height ratio = 1080/1920 = 9/16
@@ -63,7 +164,7 @@
         //pipes
         let pipeArray = [];
         let pipeWidth = 200;
-        let pipeHeight = 512;
+        let pipeHeight = 600;
         let pipeX = window.innerWidth;
         let pipeY = 0;
 
@@ -77,6 +178,7 @@
 
         let gameOver = false;
         let score = 0;
+        let pipeInterval;
 
         //sounds
         const sfxWing = new Audio("./sfx_wing.wav");
@@ -105,25 +207,57 @@
         window.onload = function () {
             board = document.getElementById("board");
             characterSprite = document.getElementById("characterSprite");
+
+            // Deactivate everything until game starts
+            board.style.display = "none";
+            characterSprite.style.display = "none";
+
             resizeBoard();
             context = board.getContext("2d");
 
-            // The character is an <img> element over the canvas — NOT drawn on canvas
-            // This is the ONLY way to get animated GIFs working, because
-            // canvas drawImage() always captures just the first frame of a GIF.
-            updateCharacterSprite();
-
             for (let i = 1; i <= 5; i++) {
                 let img = new Image();
-                img.src = `./${i}.png`;
+                img.src = `./obstacles/${i}.png`;
                 pipeImages.push(img);
             }
 
+            // Listen for input but don't start the game loop yet
+            document.addEventListener("keydown", handleInput);
+            document.addEventListener("touchstart", handleInput);
+            document.addEventListener("mousedown", handleInput);
+            window.addEventListener("resize", resizeBoard);
+        }
+
+        function handleInput(e) {
+            // For keyboard, only respond to Space, ArrowUp, KeyX
+            if (e.type === "keydown" && e.code !== "Space" && e.code !== "ArrowUp" && e.code !== "KeyX") {
+                return;
+            }
+
+            if (!gameStarted) {
+                startGame();
+                return;
+            }
+
+            jump(e);
+        }
+
+        function startGame() {
+            gameStarted = true;
+
+            // Hide start screen
+            document.getElementById("startScreen").classList.add("hidden");
+
+            // Activate game board and character
+            board.style.display = "block";
+            characterSprite.style.display = "block";
+            characterSprite.src = "./sprite.gif";
+            updateCharacterSprite();
+
+            // Start the game
             bgm.play();
             requestAnimationFrame(update);
-            setInterval(placePipes, 1500);
-            document.addEventListener("keydown", moveCharacter);
-            window.addEventListener("resize", resizeBoard);
+            pipeInterval = setInterval(placePipes, 1000);
         }
 
         function resizeBoard() {
@@ -135,7 +269,9 @@
             characterX = boardWidth / 3;
             characterY = boardHeight / 2;
             character.x = characterX;
-            updateCharacterSprite();
+            if (gameStarted) {
+                updateCharacterSprite();
+            }
         }
 
         function update() {
@@ -148,7 +284,7 @@
 
             if (gameOver) {
                 context.fillStyle = "white";
-                context.font = "45px sans-serif";
+                context.font = "45px 'Mario-Kart-DS'";
                 context.fillText("GAME OVER", 5, 90);
                 return;
             }
@@ -158,7 +294,13 @@
             character.y = Math.max(character.y + velocityY, 0);
 
             if (character.y > board.height) {
-                if (!gameOver) { playSound(sfxDie); }
+                if (!gameOver) {
+                    playSound(sfxDie);
+                    characterSprite.src = "./explosion.gif?t=" + Date.now();
+                    setTimeout(() => {
+                        if (gameOver) characterSprite.style.display = "none";
+                    }, 1000);
+                }
                 gameOver = true;
             }
 
@@ -183,7 +325,14 @@
                 }
 
                 if (detectCollision(character, pipe)) {
-                    if (!gameOver) { playSound(sfxHit); setTimeout(() => playSound(sfxDie), 500); }
+                    if (!gameOver) {
+                        playSound(sfxHit);
+                        setTimeout(() => playSound(sfxDie), 500);
+                        characterSprite.src = "./explosion.gif?t=" + Date.now();
+                        setTimeout(() => {
+                            if (gameOver) characterSprite.style.display = "none";
+                        }, 1000);
+                    }
                     gameOver = true;
                 }
             }
@@ -195,7 +344,7 @@
 
             //score
             context.fillStyle = "white";
-            context.font = "45px sans-serif";
+            context.font = "45px 'Mario-Kart-DS'";
             context.fillText(score, 5, 45);
         }
 
@@ -227,16 +376,25 @@
 
         function moveCharacter(e) {
             if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
-                velocityY = -6;
-                playSound(sfxWing);
+                jump();
+            }
+        }
 
-                if (gameOver) {
-                    playSound(sfxSwooshing);
-                    character.y = characterY;
-                    pipeArray = [];
-                    score = 0;
-                    gameOver = false;
-                }
+        function jump(e) {
+            if (e && e.type === "touchstart") {
+                // e.preventDefault(); // Uncomment if you want to prevent default touch behavior
+            }
+            velocityY = -6;
+            playSound(sfxWing);
+
+            if (gameOver) {
+                playSound(sfxSwooshing);
+                character.y = characterY;
+                pipeArray = [];
+                score = 0;
+                gameOver = false;
+                characterSprite.src = "./sprite.gif";
+                characterSprite.style.display = "block";
             }
         }
 
